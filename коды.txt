@@ -1,0 +1,61 @@
+--запрос первый
+SELECT *
+FROM chitateli
+WHERE data_rozhdeniya >= '1990-01-01'
+  AND data_rozhdeniya < '1991-01-01'
+  AND adres ILIKE '%Шипиловская%';
+  
+--запрос второй
+  SELECT kontaktniy_telefon
+FROM chitateli
+WHERE familiya ILIKE 'А%'
+   OR familiya ILIKE 'Б%'
+   OR familiya ILIKE 'В%';
+
+--запрос третий
+   CREATE TABLE rezultat_variant3 AS
+SELECT c.*
+FROM chitateli c
+WHERE c.data_rozhdeniya >= '1990-01-01'
+  AND c.data_rozhdeniya < '1991-01-01'
+  AND c.adres ILIKE '%Шипиловская%'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM aboniment a
+      WHERE a.kod_chitatelya = c.kod_chitatelya
+  );
+
+--запрос четвертый
+INSERT INTO rezultat_variant3
+SELECT *
+FROM chitateli
+WHERE kontaktniy_telefon IS NULL;
+
+--запрос пятый
+UPDATE rezultat_variant3
+SET adres = 'Москва, Борисовский проезд'
+WHERE adres ILIKE '%Домодедовская%';
+
+--запрос шестой
+INSERT INTO chitateli
+(familiya, imya, otchestvo, data_rozhdeniya,
+ pasportnye_dannye, adres, kontaktniy_telefon)
+VALUES
+('Данилов', 'Олег', 'Павлович', '1993-04-02',
+ NULL, 'Москва, Борисовский проезд, 10', NULL);
+  
+--запрос седьмой
+  SELECT
+    c.kod_chitatelya,
+    c.familiya,
+    c.imya,
+    COUNT(a.kod_knigi) AS kolichestvo_knig
+FROM
+    chitateli c
+    LEFT JOIN aboniment a ON c.kod_chitatelya = a.kod_chitatelya
+GROUP BY
+    c.kod_chitatelya,
+    c.familiya,
+    c.imya
+ORDER BY
+    c.kod_chitatelya;
